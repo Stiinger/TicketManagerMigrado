@@ -195,7 +195,7 @@
 			}
 		}
 		else
-			Mensaje = "No deben haber campos vacíos en el detalle.";
+			Mensaje = "No deben haber campos vacíos.";
 		StateHasChanged();
 		Nuevo();
 	}
@@ -212,7 +212,7 @@
 		{
 			if (detalle.Mensaje == DetalleMensaje)
 			{
-				Mensaje = "Ya existe un detalle con este mensaje.";
+				Mensaje = "Ya existe este detalle.";
 				return true;
 			}
 		}
