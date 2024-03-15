@@ -6,14 +6,13 @@ public class Clientes
 {
     [Key]
     public int ClienteId { get; set; }
-    [Required(ErrorMessage = "El campo Nombre no puede estar vacío.")]
-    [RegularExpression(@"^[^\d]+$", ErrorMessage = "El nombre no puede contener números.")]
-    [StringLength(50, MinimumLength = 5, ErrorMessage = "El nombre ingresado es demasiado corto.")]
+    [Required(ErrorMessage = "El campo nombre no puede estar vacío.")]
+    [RegularExpression(@"^[^\d]+$", ErrorMessage = "El nombre solo puede contener letras.")]
     public string Nombres { get; set; } = string.Empty;
-    [Required(ErrorMessage = "El campo Teléfono no puede estar vacío.")]
+    [Required(ErrorMessage = "El campo teléfono no puede estar vacío.")]
     [Phone(ErrorMessage = "Error, el número de teléfono no es válido.")]
     public string Telefono { get; set; } = string.Empty;
-    [Required(ErrorMessage = "El campo Celular no puede estar vacío.")]
+    [Required(ErrorMessage = "El campo celular no puede estar vacío.")]
     [Phone(ErrorMessage = "Error, el número de celular no es válido.")]
     public string Celular { get; set; } = string.Empty;
     [Required(ErrorMessage = "El campo RNC no puede estar vacío.")]
