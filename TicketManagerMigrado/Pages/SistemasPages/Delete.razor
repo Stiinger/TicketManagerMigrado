@@ -1,0 +1,54 @@
+﻿@page "/EliminarSistema"
+@page "/EliminarSistema/SistemaId={sistemaId:int}"
+
+@inject HttpClient httpClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Eliminar Sistema</PageTitle>
+<div class="container">
+	<div class="card shadow-lg">
+		<div class="card-header">
+			<h3><strong>Eliminar Sistema</strong></h3>
+		</div>
+		<div class="card-body">
+			<h5><strong>¿Seguro quieres eliminar este sistema?</strong></h5>
+
+			<div>
+				<p class="mb-2"><strong>Sistema Id:</strong> @sistema.SistemaId</p>
+			</div>
+			<div>
+				<p class="mb-2"><strong>Nombre:</strong> @sistema.Nombre</p>
+			</div>
+
+			<button type="button" class="btn btn-danger" @onclick="Eliminar"><i class="bi bi-trash3"></i> Eliminar</button>
+			<button type="button" class="btn btn-dark" @onclick="VolverAtras"><i class="bi bi-x-octagon"></i> Cancelar</button>
+		</div>
+		@Mensaje
+	</div>
+</div>
+
+@code {
+	[Parameter]
+	public int sistemaId { get; set; }
+	public Sistemas sistema { get; set; } = new Sistemas();
+	public string Mensaje { get; set; } = string.Empty;
+
+	protected override async Task OnInitializedAsync()
+	{
+		sistema = (await httpClient.GetFromJsonAsync<Sistemas>($"api/Sistemas/{sistemaId}"))!;
+	}
+
+	public async Task Eliminar()
+	{
+		var eliminado = await httpClient.DeleteAsync($"api/Sistemas/{sistemaId}");
+		if (eliminado.IsSuccessStatusCode)
+			VolverAtras();
+		else
+			Mensaje = "No se pudo eliminar.";
+	}
+
+	void VolverAtras()
+	{
+		NavigationManager.NavigateTo("/Sistemas");
+	}
+}

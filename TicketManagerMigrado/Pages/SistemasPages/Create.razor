@@ -1,0 +1,79 @@
+﻿@page "/CrearSistema"
+
+@inject HttpClient httpClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Crear Nuevo Sistema</PageTitle>
+<EditForm Model="sistema" OnValidSubmit="Crear">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h3><strong>Crear Nuevo Sistema</strong></h3>
+            </div>
+            <div class="card-body">
+                @*Sistema Id:*@
+                <label>SistemaId:</label>
+                <div class="input-group">
+                    <InputNumber @bind-Value="sistema.SistemaId" class="id-input"> </InputNumber>
+                </div>
+                <div class="row">
+                    @*Nombre:*@
+                    <div class="col-4">
+                        <label>Nombre:</label>
+                        <InputText @bind-Value="sistema.Nombre" class="form-control"></InputText>
+                        <ValidationMessage For="@(() => sistema.Nombre)" />
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-center">
+                <button type="submit" class="btn btn-outline-success"><i class="bi bi-floppy-fill" /> Crear</button>
+                <div class="col d-flex justify-content-end"><a href="/Sistemas" class="btn btn-dark"> Volver</a></div>
+            </div>
+        </div>
+    </div>
+    @Mensaje
+</EditForm>
+
+@code {
+    public Sistemas sistema { get; set; } = new Sistemas();
+    public string Mensaje { get; set; } = string.Empty;
+
+    public async Task Crear()
+    {
+        if (!await Validar())
+        {
+            var sistemaCreado = await httpClient.PostAsJsonAsync("api/Sistemas", sistema);
+
+            if (sistemaCreado.IsSuccessStatusCode)
+            {
+                Nuevo();
+                Mensaje = "Se guardó correctamente el sistema.";
+            }
+            else
+            {
+                Nuevo();
+                Mensaje = "No se pudo guardar el sistema.";
+            }
+        }
+    }
+
+    public async Task<bool> Validar()
+    {
+        var listaSistemas = await httpClient.GetFromJsonAsync<List<Sistemas>>("api/Sistemas");
+        var descripcion = listaSistemas!.Where(s => s.Nombre == sistema.Nombre);
+
+        if (descripcion.Any())
+        {
+            Mensaje = "Ya existe un sistema con este nombre.";
+            return true;
+        }
+        return false;
+    }
+
+    public void Nuevo()
+    {
+        sistema = new Sistemas();
+        Mensaje = string.Empty;
+    }
+}

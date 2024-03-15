@@ -1,0 +1,138 @@
+﻿@page "/Sistemas"
+@inject HttpClient httpClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Sistemas</PageTitle>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h3><strong>Sistemas</strong></h3>
+            <div class="row">
+                <div class="col-2">
+                    <a href="/CrearSistema" class="btn btn-success bi bi-file-earmark-diff-fill"> Crear</a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <label>Filtrar por:</label>
+                <div class="col-2">
+                    <InputSelect class="form-select" @bind-Value="OpcionFiltro">
+                        <option disabled selected value="0">Seleccionar</option>
+                        <option value="1">Sistemas Id</option>
+                        <option value="2">Nombre</option>
+                    </InputSelect>
+                </div>
+                <div class="col-auto">
+                    @switch (OpcionFiltro)
+                    {
+                        case 1:
+                            <div class="input-group row">
+                                <InputNumber class="form-control" @bind-Value="sistema.SistemaId"></InputNumber>
+                                <div class="col-3">
+                                    <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Filtrar">Buscar</button>
+                                </div>
+                                <div class="col-1">
+                                    <button type="button" class="btn btn-outline-secondary bi bi-arrow-clockwise" @onclick="ReiniciarFiltro">Reiniciar</button>
+                                </div>
+                            </div>
+                            break;
+                        case 2:
+                            <div class="input-group row">
+                                <InputText class="form-control" @bind-Value="sistema.Nombre"></InputText>
+                                <div class="col-3">
+                                    <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Filtrar">Buscar</button>
+                                </div>
+                                <div class="col-1">
+                                    <button type="button" class="btn btn-outline-secondary bi bi-arrow-clockwise" @onclick="ReiniciarFiltro">Reiniciar</button>
+                                </div>
+                            </div>
+                            break;
+                    }
+                </div>
+                @if (listaSistemas.Count() == 0)
+                {
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">No hay sistemas para mostrar.</h3>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Sistema Id</th>
+                                <th>Nombre</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var sistema in listaSistemas)
+                            {
+                                <tr>
+                                    <td>@sistema.SistemaId</td>
+                                    <td>@sistema.Nombre</td>
+                                    <td><button type="button" class="btn btn-info" @onclick="(e) => IrDetalle(sistema.SistemaId)"><i class="bi bi-eye"></i> Detalles</button></td>
+                                    <td><button type="button" class="btn btn-warning" @onclick="(e) => IrEditar(sistema.SistemaId)"><i class="bi bi-pencil-square"></i> Editar</button></td>
+                                    <td><button type="button" class="btn btn-danger" @onclick="(e) => IrEliminar(sistema.SistemaId)"><i class="bi bi-trash3-fill"></i> Eliminar</button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col">
+                        <p class="float-start"><strong>Total de Sistemas:</strong> @listaSistemas.Count</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Sistemas> listaSistemas = new List<Sistemas>();
+    private int OpcionFiltro { get; set; } = 0;
+    private Sistemas sistema { get; set; } = new Sistemas();
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaSistemas = (await httpClient.GetFromJsonAsync<List<Sistemas>>("api/Sistemas"))!;
+    }
+
+    public void IrEditar(int sistemaId)
+    {
+        NavigationManager.NavigateTo($"/EditarSistema/SistemaId={sistemaId}");
+    }
+
+    public void IrEliminar(int sistemaId)
+    {
+        NavigationManager.NavigateTo($"/EliminarSistema/SistemaId={sistemaId}");
+    }
+
+    public void IrDetalle(int sistemaId)
+    {
+        NavigationManager.NavigateTo($"DetallesSistemas/SistemaId={sistemaId}");
+    }
+
+    public async Task Filtrar()
+    {
+        switch (OpcionFiltro)
+        {
+            case 1:
+                listaSistemas = (await httpClient.GetFromJsonAsync<List<Sistemas>>($"api/Sistemas/"))!.Where(s => s.SistemaId == sistema.SistemaId).ToList();
+                break;
+            case 2:
+                listaSistemas = (await httpClient.GetFromJsonAsync<List<Sistemas>>("api/Sistemas"))!.Where(s => s.Nombre!.ToLower().Contains(sistema.Nombre!.ToLower())).ToList();
+                break;
+        }
+    }
+
+    public async Task ReiniciarFiltro()
+    {
+        listaSistemas = (await httpClient.GetFromJsonAsync<List<Sistemas>>("api/Sistemas"))!;
+    }
+}

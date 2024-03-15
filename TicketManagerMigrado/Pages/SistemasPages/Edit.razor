@@ -1,0 +1,85 @@
+﻿@page "/EditarSistema"
+@page "/EditarSistema/SistemaId={sistemaId:int}"
+
+@inject HttpClient httpClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Editar Sistema</PageTitle>
+<EditForm Model="sistema" OnValidSubmit="Modificar">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h3><strong>Editar Sistema</strong></h3>
+            </div>
+            <div class="card-body">
+                @*Sistema ID:*@
+                <div class="row">
+                    <label>SistemaId:</label>
+                    <div class="col-2">
+                        <InputNumber class="form-control" @bind-Value="sistema.SistemaId"></InputNumber>
+                    </div>
+                </div>
+                <div class="row">
+                    @*Nombre:*@
+                    <div class="col-4">
+                        <label>Nombre:</label>
+                        <InputText @bind-Value="sistema.Nombre" class="form-control"></InputText>
+                        <ValidationMessage For="@(() => sistema.Nombre)" />
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-center">
+                <button type="submit" class="btn btn-outline-primary"><i class="bi bi-floppy-fill" /> Modificar</button>
+                <div class="col d-flex justify-content-end"><a href="/Sistemas" class="btn btn-dark"> Volver</a></div>
+
+            </div>
+        </div>
+    </div>
+    @Mensaje
+</EditForm>
+
+@code {
+    [Parameter]
+    public int sistemaId { get; set; }
+    public Sistemas sistema { get; set; } = new Sistemas();
+    public string Mensaje { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        sistema = (await httpClient.GetFromJsonAsync<Sistemas>($"api/Sistemas/{sistemaId}"))!;
+    }
+
+    public async Task Modificar()
+    {
+        if (!await Validar())
+        {
+            var modificar = await httpClient.PutAsJsonAsync($"api/Sistemas/{sistemaId}", sistema);
+            if (modificar.IsSuccessStatusCode)
+            {
+                StateHasChanged();
+                VolverAtras();
+            }
+            else
+                Mensaje = "No se pudo modificar el sistema.";
+        }
+    }
+
+    void VolverAtras()
+    {
+        NavigationManager.NavigateTo("/Sistemas");
+    }
+
+    public async Task<bool> Validar()
+    {
+        var listaSistemas = await httpClient.GetFromJsonAsync<List<Sistemas>>("api/Sistemas");
+        var descripcion = listaSistemas!.Where(s => s.Nombre == sistema.Nombre);
+
+        if (descripcion.Any())
+        {
+            Mensaje = "Ya existe un sistema con este nombre.";
+            return true;
+        }
+        return false;
+    }
+}

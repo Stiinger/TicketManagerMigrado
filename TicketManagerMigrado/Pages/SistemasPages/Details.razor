@@ -1,0 +1,37 @@
+﻿@page "/DetallesSistemas"
+@page "/DetallesSistemas/SistemaId={sistemaId:int}"
+@inject HttpClient httpClient
+
+<PageTitle>Detalles de Sistema</PageTitle>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h3><strong>Informaci&oacute;n de Sistema</strong></h3>
+        </div>
+        <div class="card-body">
+            <h4><strong>Informaci&oacute;n del Sistema #@sistema.SistemaId</strong></h4>
+            <div>
+                <p class="mb-2"><strong>Sistema Id:</strong> @sistema.SistemaId</p>
+            </div>
+            <div>
+                <p class="mb-2"><strong>Nombre:</strong> @sistema.Nombre</p>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="col d-flex justify-content-end"><a href="/Sistemas" class="btn btn-dark"> Volver</a></div>
+        </div>
+        @Mensaje
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int sistemaId { get; set; }
+    public Sistemas sistema { get; set; } = new Sistemas();
+    public string Mensaje { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        sistema = (await httpClient.GetFromJsonAsync<Sistemas>($"api/Sistemas/{sistemaId}"))!;
+    }
+}

@@ -1,0 +1,6 @@
+@TicketManagerMigrado.Api_HostAddress = http://localhost:5078
+
+GET {{TicketManagerMigrado.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

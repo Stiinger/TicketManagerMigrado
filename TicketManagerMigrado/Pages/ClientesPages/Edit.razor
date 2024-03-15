@@ -1,0 +1,125 @@
+﻿@page "/EditarCliente"
+@page "/EditarCliente/ClienteId={clienteId:int}"
+
+@inject HttpClient httpClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Editar Cliente</PageTitle>
+<EditForm Model="cliente" OnValidSubmit="Modificar" FormName="modificarCliente">
+	<DataAnnotationsValidator />
+	<div class="container">
+		<div class="card shadow-lg">
+			<div class="card-header">
+				<h3><strong>Editar Cliente</strong></h3>
+			</div>
+			<div class="card-body">
+				@*Cliente Id:*@
+				<label>ClienteId:</label>
+				<div class="col-6">
+					<InputNumber @bind-Value="cliente.ClienteId" class="id-input"></InputNumber>
+				</div>
+				<div class='row'>
+					@*Nombres:*@
+					<div class="col-4">
+						<label>Nombres:</label>
+						<InputText @bind-Value="cliente.Nombres" class="form-control input-group-sm" placeholder="Ejemplo: Jose Antonio Ortega"></InputText>
+						<ValidationMessage For="@(() => cliente.Nombres)" />
+					</div>
+					@*RNC:*@
+					<div class="col-4">
+						<label>RNC:</label>
+						<InputText @bind-Value="cliente.RNC" class="form-control input-group-sm" placeholder="Ejemplo: 101027797"></InputText>
+						<ValidationMessage For="@(() => cliente.RNC)" />
+					</div>
+				</div>
+				<div class='row'>
+					@*Email:*@
+					<div class="col-4">
+						<label>Email:</label>
+						<InputText @bind-Value="cliente.Email" class="form-control input-group-sm" placeholder="Ejemplo: jose_ortega@gmail.com"></InputText>
+						<ValidationMessage For="@(() => cliente.Email)" />
+					</div>
+					@*Dirección:*@
+					<div class="col-4">
+						<label>Direcci&oacute;n:</label>
+						<InputText @bind-Value="cliente.Direccion" class="form-control input-group-sm" placeholder="Ejemplo: Calle Martinez #35, Salcedo"></InputText>
+						<ValidationMessage For="@(() => cliente.Direccion)" />
+					</div>
+				</div>
+				<div class='row'>
+					@*Teléfono:*@
+					<div class="col-4">
+						<label>Tel&eacute;fono:</label>
+						<InputText @bind-Value="cliente.Telefono" class="form-control input-group-sm" placeholder="Ejemplo: 8095772170"></InputText>
+						<ValidationMessage For="@(() => cliente.Telefono)" />
+					</div>
+					@*Celular:*@
+					<div class="col-4">
+						<label>Celular:</label>
+						<InputText @bind-Value="cliente.Celular" class="form-control input-group-sm" placeholder="Ejemplo: 8299639714"></InputText>
+						<ValidationMessage For="@(() => cliente.Celular)" />
+					</div>
+				</div>
+
+			</div>
+			<div class="card-footer d-flex justify-content-center">
+				<button type="submit" class="btn btn-outline-primary"><i class="bi bi-floppy-fill" /> Modificar</button>
+				<div class="col d-flex justify-content-end"><a href="/Clientes" class="btn btn-dark"> Volver</a></div>
+			</div>
+		</div>
+	</div>
+	@Mensaje
+</EditForm>
+
+@code {
+	[Parameter]
+	public int clienteId { get; set; }
+	public Clientes cliente { get; set; } = new Clientes();
+	public string Mensaje { get; set; } = string.Empty;
+
+	protected override async Task OnInitializedAsync()
+	{
+		cliente = (await httpClient.GetFromJsonAsync<Clientes>($"api/Clientes/{clienteId}"))!;
+	}
+
+	public async Task Modificar()
+	{
+		if (!await Validar())
+		{
+			var modificar = await httpClient.PutAsJsonAsync($"api/Clientes/{clienteId}", cliente);
+			if (modificar.IsSuccessStatusCode)
+			{
+				StateHasChanged();
+				VolverAtras();
+			}
+			else
+				Mensaje = "No se pudo modificar el cliente.";
+		}
+	}
+
+	void VolverAtras()
+	{
+		NavigationManager.NavigateTo("/Clientes");
+	}
+
+	public async Task<bool> Validar()
+	{
+		var clienteList = await httpClient.GetFromJsonAsync<List<Clientes>>("api/Clientes");
+		var nombre = clienteList!.Where(c => c.Nombres == cliente.Nombres);
+		var rnc = clienteList!.Where(c => c.RNC == cliente.RNC);
+
+		if (nombre != null)
+		{
+			Mensaje = "Ya existe un cliente con este nombre.";
+			StateHasChanged();
+			return true;
+		}
+		else if (rnc != null)
+		{
+			Mensaje = "Ya existe un cliente con este RNC.";
+			StateHasChanged();
+			return true;
+		}
+		return false;
+	}
+}

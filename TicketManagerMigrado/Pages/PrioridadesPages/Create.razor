@@ -1,0 +1,87 @@
+﻿@page "/CrearPrioridad"
+
+@inject HttpClient httpClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Crear Nueva Prioridad</PageTitle>
+<EditForm Model="prioridad" OnValidSubmit="Crear">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h3><strong>Crear Nueva Prioridad</strong></h3>
+            </div>
+            <div class="card-body">
+                @*Prioridad Id:*@
+                <label>PrioridadId:</label>
+                <div class="input-group">
+                    <InputNumber @bind-Value="prioridad.PrioridadId" class="id-input"> </InputNumber>
+                </div>
+                <div class="row">
+                    @*Descripción:*@
+                    <div class="col-4">
+                        <label>Descripci&oacute;n:</label>
+                        <InputText @bind-Value="prioridad.Descripcion" class="form-control"></InputText>
+                        <ValidationMessage For="@(() => prioridad.Descripcion)" />
+                    </div>
+                </div>
+                <div class="row">
+                    @*Días compromiso:*@
+                    <div class="col-2">
+                        <label>D&iacute;as compromiso:</label>
+                        <InputNumber @bind-Value="prioridad.DiasCompromiso" class="form-control"></InputNumber>
+                        <ValidationMessage For="@(() => prioridad.DiasCompromiso)" />
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-center">
+                <button type="submit" class="btn btn-outline-success"><i class="bi bi-floppy-fill" /> Crear</button>
+                <div class="col d-flex justify-content-end"><a href="/Prioridades" class="btn btn-dark"> Volver</a></div>
+            </div>
+        </div>
+    </div>
+    @Mensaje
+</EditForm>
+
+@code {
+    public Prioridades prioridad { get; set; } = new Prioridades();
+    public string Mensaje { get; set; } = string.Empty;
+
+    public async Task Crear()
+    {
+        if (!await Validar())
+        {
+            var prioridadCreada = await httpClient.PostAsJsonAsync("api/Prioridades", prioridad);
+
+            if (prioridadCreada.IsSuccessStatusCode)
+            {
+                Nuevo();
+                Mensaje = "Se guardó correctamente la prioridad.";
+            }
+            else
+            {
+                Nuevo();
+                Mensaje = "No se pudo guardar la prioridad.";
+            }
+        }
+    }
+
+    public async Task<bool> Validar()
+    {
+        var listaPrioridades = await httpClient.GetFromJsonAsync<List<Prioridades>>("api/Prioridades");
+        var descripcion = listaPrioridades!.Where(p => p.Descripcion == prioridad.Descripcion);
+
+        if (descripcion.Any())
+        {
+            Mensaje = "Ya existe una prioridad con esta descripción.";
+            return true;
+        }
+        return false;
+    }
+
+    public void Nuevo()
+    {
+        prioridad = new Prioridades();
+        Mensaje = string.Empty;
+    }
+}
